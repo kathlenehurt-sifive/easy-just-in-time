@@ -6,6 +6,7 @@
 #include <llvm/IR/InstIterator.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/DebugInfo.h>
+#include <llvm/Pass.h>
 
 #define DEBUG_TYPE "easy-register-layout"
 #include <llvm/Support/Debug.h>
@@ -80,10 +81,10 @@ namespace easy {
                                 Value* Buf, Value* ByVal, Type* CurLevelTy, SmallVectorImpl<Value*> &GEPOffset) {
       StructType* Struct = dyn_cast<StructType>(CurLevelTy);
       if(!Struct) {
-        Value* ArgPtr = B.CreateGEP(ByVal, GEPOffset);
-        Value* Argument = B.CreateLoad(ArgPtr);
+        Value* ArgPtr = B.CreateGEP(CurLevelTy, ByVal, GEPOffset);
+        Value* Argument = B.CreateLoad(CurLevelTy, ArgPtr, "name");
 
-        Value* Ptr = B.CreateConstGEP1_32(Buf, Offset);
+        Value* Ptr = B.CreateConstGEP1_32(CurLevelTy, Buf, Offset);
         B.CreateStore(Argument, Ptr);
 
         Offset += DL.getTypeStoreSize(Argument->getType());
@@ -104,7 +105,7 @@ namespace easy {
         Value *Argument = F->arg_begin()+Arg;
         Type* ArgTy = Argument->getType();
 
-        Value* Ptr = B.CreateConstGEP1_32(Buf, Offset);
+        Value* Ptr = B.CreateConstGEP1_32(ArgTy, Buf, Offset);
         Ptr = B.CreatePointerCast(Ptr, PointerType::getUnqual(ArgTy), Argument->getName() + ".ptr");
         B.CreateStore(Argument, Ptr);
 

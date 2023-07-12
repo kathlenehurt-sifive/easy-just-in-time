@@ -12,7 +12,6 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Support/Host.h> 
 #include <llvm/Target/TargetMachine.h> 
-#include <llvm/Support/TargetRegistry.h> 
 #include <llvm/Analysis/TargetTransformInfo.h> 
 #include <llvm/Analysis/TargetLibraryInfo.h> 
 #include <llvm/Support/FileSystem.h>
@@ -95,7 +94,7 @@ static void WriteOptimizedToFile(llvm::Module const &M, std::string const& File)
   if(File.empty())
     return;
   std::error_code Error;
-  llvm::raw_fd_ostream Out(File, Error, llvm::sys::fs::F_None);
+  llvm::raw_fd_ostream Out(File, Error, llvm::sys::fs::OF_None);
 
   if(Error)
     throw CouldNotOpenFile(Error.message());
@@ -153,7 +152,7 @@ void easy::Function::serialize(std::ostream& os) const {
   llvm::raw_string_ostream stream(buf);
 
   LLVMHolderImpl const *H = reinterpret_cast<LLVMHolderImpl const*>(Holder.get());
-  llvm::WriteBitcodeToFile(H->M_, stream);
+  llvm::WriteBitcodeToFile(*(H->M_), stream);
   stream.flush();
 
   os << buf;

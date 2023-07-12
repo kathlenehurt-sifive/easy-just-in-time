@@ -133,11 +133,11 @@ bool CastCallWithPointerCasts(FunctionType* CalledTy, FunctionType* UncastedTy) 
 template<class IIter>
 void RecastCalls(IIter it, IIter end) {
   for(;it != end;) {
-    CallSite CS{&*it++};
-    if(!CS)
+    auto *CB = dyn_cast<CallBase>(&*it++);
+    if(!CB)
       continue;
 
-    Value* Called = CS.getCalledValue();
+    Value* Called = CB->getCalledOperand();
     Value* Uncasted = Called->stripPointerCasts();
     if(Called == Uncasted)
       continue;
@@ -148,19 +148,20 @@ void RecastCalls(IIter it, IIter end) {
     if(!CastCallWithPointerCasts(CalledTy, UncastedTy))
       continue;
 
-    CS.setCalledFunction(Uncasted);
-    CS.mutateFunctionType(UncastedTy);
+    Function* CalledFunction = CB->getCalledFunction();
+    CB->setCalledFunction(CalledFunction);
+    CB->mutateFunctionType(UncastedTy);
 
     // cast every pointer argument to the expected type
-    IRBuilder<> B(CS.getInstruction());
+    IRBuilder<> B(CB);
 
-    size_t N = CS.getNumArgOperands();
+    size_t N = CB->arg_size();
     for(unsigned i = 0; i != N; ++i) {
-      Value* Arg = CS.getArgOperand(i);
+      Value* Arg = CB->getArgOperand(i);
       Type* ArgTy = Arg->getType();
       Type* UncTy = UncastedTy->getParamType(i);
       if(ArgTy->isPointerTy() && ArgTy != UncTy)
-        CS.setArgument(i, B.CreatePointerCast(Arg, UncTy, Arg->getName() + ".recast_calls"));
+        CalledFunction->setOperand(i, B.CreatePointerCast(Arg, UncTy, Arg->getName() + ".recast_calls"));
     }
   }
 }
