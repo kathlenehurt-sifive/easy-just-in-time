@@ -9,9 +9,9 @@ add_library(EasyJitRuntime SHARED
   pass/InlineParameters.cpp
   pass/InlineParametersHelper.cpp
 )
+target_include_directories(EasyJitRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 llvm_config(EasyJitRuntime core codegen interpreter support mcjit native executionengine passes objcarcopts)
-
 
 set(EASY_JIT_RUNTIME ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEasyJitRuntime${CMAKE_SHARED_LIBRARY_SUFFIX} PARENT_SCOPE)
 
