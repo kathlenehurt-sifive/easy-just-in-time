@@ -70,6 +70,7 @@ void GetInlineArgs(easy::Context const &C,
                    SmallVectorImpl<Value*> &Args, IRBuilder<> &B) {
 
   LLVMContext &Ctx = F.getContext();
+  (void) Ctx;
   DataLayout const &DL = F.getParent()->getDataLayout();
 
   if(FHLL.StructReturn_)
@@ -127,8 +128,8 @@ void GetInlineArgs(easy::Context const &C,
       } break;
 
       case easy::ArgumentBase::AK_Module: {
-
         auto &ArgInF = FHLL.Args_[i];
+        (void) &ArgInF;
         assert(ArgInF.Types_.size() == 1);
 
         easy::Function const &Function = Arg.as<easy::ModuleArgument>()->get();

@@ -182,6 +182,7 @@ llvm::AllocaInst* easy::GetStructAlloc(llvm::IRBuilder<> &B,
   // Check that size matches the .data()
 
   size_t Size = StoreStructField(B, DL, StructTy, (uint8_t const*)Struct.get().data(), Alloc, GEP);
+  (void) Size;
 
   return Alloc;
 }
